@@ -15,6 +15,9 @@ func main() {
 		return
 	}
 	conf.run()
+	
+	fmt.Println("")
+	fmt.Println("done")
 }
 
 type cliMode int
@@ -28,6 +31,10 @@ const (
 	stresTest
 )
 
+func (c cliMode) requireData() bool {
+	return c == tcpClient || c == getCmd || c == setCmd || c == deleteCmd
+}
+
 func parseCliConfig() (cliCommand, error) {
 	data := flag.String("data", "", "data you want to send. It'll add termination in tcp mode\\r\\n. In SET - send data in key=value format")
 	port := flag.Int("port", srv.DefaultPort, "Port you want to use")
@@ -36,7 +43,7 @@ func parseCliConfig() (cliCommand, error) {
 	flag.Parse()
 
 	mode := cliMode(*modeInt)
-	if (mode == tcpClient || mode == getCmd || mode == setCmd || mode == deleteCmd) && *data == "" {
+	if mode.requireData() && *data == "" {
 		return nil, fmt.Errorf("no data provided in client mode")
 	}
 
@@ -63,6 +70,7 @@ func (s *serverCliCommand) run() {
 	srv.StartServer(s.port)
 }
 
+
 type clientCliCommand struct {
 	port int
 	data string
@@ -86,7 +94,5 @@ type stresTestCommand struct {
 }
 func (s *stresTestCommand) run() {
 	fmt.Println("stres mode - sending data to port", s.port, "with", s.threads, "threads")
-
 	client.RunStres(s.port, s.threads)
-	fmt.Println("done")
 }
