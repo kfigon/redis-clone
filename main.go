@@ -20,15 +20,14 @@ func main() {
 	fmt.Println("done")
 }
 
-type cliMode int
+type cliMode string
 const (
-	server cliMode = iota
-
-	tcpClient
-	getCmd
-	setCmd
-	deleteCmd
-	stresTest
+	server cliMode = "server"
+	tcpClient cliMode = "tcp"
+	getCmd cliMode = "get"
+	setCmd cliMode = "set"
+	deleteCmd cliMode = "delete"
+	stresTest cliMode = "stres"
 )
 
 func (c cliMode) requireData() bool {
@@ -36,13 +35,13 @@ func (c cliMode) requireData() bool {
 }
 
 func parseCliConfig() (cliCommand, error) {
-	data := flag.String("data", "", "data you want to send. It'll add termination in tcp mode\\r\\n. In SET - send data in key=value format")
+	data := flag.String("data", "", "data you want to send. It'll add termination in tcp mode: \\r\\n. In SET - send data in key=value format")
 	port := flag.Int("port", srv.DefaultPort, "Port you want to use")
-	modeInt := flag.Int("mode", 0, "application mode. 0 - server; 1 - tcpClient; 2 - GET; 3 - SET; 4 - DELETE; 5 - stres test")
+	modeStr := flag.String("mode", string(server), "application mode: server, tcp, get, set, delete, stres")
 	threads := flag.Int("threads", 1, "threads in stres mode")
 	flag.Parse()
 
-	mode := cliMode(*modeInt)
+	mode := cliMode(*modeStr)
 	if mode.requireData() && *data == "" {
 		return nil, fmt.Errorf("no data provided in client mode")
 	}
